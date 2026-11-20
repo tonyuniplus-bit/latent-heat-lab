@@ -1,5 +1,9 @@
+import { leadNumber, useLead } from "../lab/lead";
 import type { Locale } from "../lab/script";
 import { clock } from "../lab/ramp";
+
+const VAPOR_LEAD_UP = [-87.2, 520, -20, 660, 20] as const;
+const VAPOR_LEAD_DOWN = [148, 470, 24, 640, 20] as const;
 
 function degrees(celsius: number): string {
   const rounded = Math.round(celsius * 10) / 10;
@@ -64,6 +68,8 @@ export function VaporRig({
 }) {
   const zh = locale === "zh-Hant";
   const simmer = fault === "warm" && waterTemp < 99.95;
+  const [startY, c1x, c1y, c2x, c2y] = useLead(step >= 3, VAPOR_LEAD_UP, VAPOR_LEAD_DOWN);
+  const heaterLead = `M395 ${leadNumber(startY)} C ${leadNumber(c1x)} ${leadNumber(c1y)}, ${leadNumber(c2x)} ${leadNumber(c2y)}, 760 130`;
   return (
     <svg
       className="scene vapor"
@@ -173,7 +179,7 @@ export function VaporRig({
       <line className="clamp" x1="548" y1="148" x2="404" y2="148" />
       <Tag x={576} y={46} en="Stand" zh="鐵架" locale={locale} />
 
-      <path className="lead" d="M395 -87.2 C 520 -20, 660 20, 760 130" />
+      <path className="lead" d={heaterLead} />
 
       <g className="supply">
         <rect x="748" y="120" width="180" height="100" rx="8" />

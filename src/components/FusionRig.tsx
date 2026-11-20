@@ -1,5 +1,9 @@
+import { leadNumber, useLead } from "../lab/lead";
 import type { Locale } from "../lab/script";
 import { grouped } from "../lab/ramp";
+
+const FUSION_LEAD_UP = [340, 10, 400, -30, -90] as const;
+const FUSION_LEAD_DOWN = [330, 80, 400, 70, 100] as const;
 
 function degrees(celsius: number): string {
   const rounded = Math.round(celsius * 10) / 10;
@@ -69,6 +73,8 @@ export function FusionRig({
 }) {
   const zh = locale === "zh-Hant";
   const thaw = fault === "cold" && iceTemp >= -0.05;
+  const [c1x, c1y, c2x, c2y, endY] = useLead(step >= 3, FUSION_LEAD_UP, FUSION_LEAD_DOWN);
+  const hotLead = `M244 100 C ${leadNumber(c1x)} ${leadNumber(c1y)}, ${leadNumber(c2x)} ${leadNumber(c2y)}, 460 ${leadNumber(endY)}`;
   return (
     <svg
       className="scene fusion"
@@ -125,7 +131,7 @@ export function FusionRig({
         <Tag x={20} y={28} en="Joulemeter" zh="焦耳計" locale={locale} className="tag-hot" />
       </g>
 
-      <path className="lead hot" d="M244 100 C 340 20, 410 -10, 460 -40.4" />
+      <path className="lead hot" d={hotLead} />
 
       <line className="stand" x1="648" y1="28" x2="648" y2="508" />
       <Tag x={668} y={48} en="Stand" zh="鐵架" locale={locale} />
