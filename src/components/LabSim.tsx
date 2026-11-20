@@ -12,25 +12,23 @@ export function LabSim() {
   const [step, setStep] = useState(0);
   const [fault, setFault] = useState<string | null>(null);
   const [page, setPage] = useState<"big-ice" | null>(null);
-  const [rush, setRush] = useState(false);
   const experiment = EXPERIMENTS.find((item) => item.id === id) ?? EXPERIMENTS[0];
   const total = experiment.steps.length;
   const current = step > 0 ? experiment.steps[step - 1] : null;
   const zh = locale === "zh-Hant";
-  const run = (phase: "hide" | "run" | "done") => (rush && phase === "run" ? "done" : phase);
 
   const fusionPhase = id !== "fusion" || step < 4 ? "hide" : step === 4 ? "run" : "done";
-  const joules = useRamp(run(fusionPhase), 0, 17020, 7000);
+  const joules = useRamp(fusionPhase, 0, 17020, 7000);
   const vaporPhase = id !== "vapor" || step < 4 ? "hide" : step === 5 ? "run" : "done";
-  const balance = useRamp(run(vaporPhase), 652.1, step >= 5 ? 627.3 : 652.1, 8000);
-  const controlBalance = useRamp(run(vaporPhase), 652.1, step >= 5 ? 651.2 : 652.1, 8000);
-  const seconds = useRamp(run(vaporPhase), 0, step >= 5 ? 120 : 0, 8000);
-  const coldJoules = useRamp(run(fault === "cold" ? "run" : "hide"), 17020, 27124, 3800);
+  const balance = useRamp(vaporPhase, 652.1, step >= 5 ? 627.3 : 652.1, 8000);
+  const controlBalance = useRamp(vaporPhase, 652.1, step >= 5 ? 651.2 : 652.1, 8000);
+  const seconds = useRamp(vaporPhase, 0, step >= 5 ? 120 : 0, 8000);
+  const coldJoules = useRamp(fault === "cold" ? "run" : "hide", 17020, 27124, 3800);
   const iceTemp = -5 + (5 * Math.min(1, Math.max(0, (coldJoules - 17020) / ((27124 - 17020) * 0.42))));
-  const warm = useRamp(run(fault === "warm" ? "run" : "hide"), 0, 1, 3800);
+  const warm = useRamp(fault === "warm" ? "run" : "hide", 0, 1, 3800);
   const waterTemp = 80 + (20 * Math.min(1, warm / 0.42));
-  const backBalance = useRamp(run(fault === "back" ? "run" : "hide"), 627.3, 649.2, 4000);
-  const jumpBalance = useRamp(run(fault === "jump" ? "run" : "hide"), 627.3, 598, 4000);
+  const backBalance = useRamp(fault === "back" ? "run" : "hide", 627.3, 649.2, 4000);
+  const jumpBalance = useRamp(fault === "jump" ? "run" : "hide", 627.3, 598, 4000);
   const fusionLive =
     id === "fusion" && ((step === 4 && joules < 17020) || (fault === "cold" && coldJoules < 27124));
 
@@ -61,7 +59,7 @@ export function LabSim() {
   const bigIce = page === "big-ice" && id === "fusion";
 
   return (
-    <div className="lab" data-rush={rush ? "yes" : "no"}>
+    <div className="lab">
       <header className="topbar">
         <div>
           <p className="kicker">{zh ? "正式實驗模擬" : "Formal laboratory simulation"}</p>
@@ -213,16 +211,6 @@ export function LabSim() {
             ) : (
               <button type="button" onClick={back} disabled={step === 0}>
                 {zh ? "上一步" : "Previous"}
-              </button>
-            )}
-            {!bigIce && (
-              <button
-                type="button"
-                data-testid="lab-skip"
-                aria-pressed={rush}
-                onClick={() => setRush((on) => !on)}
-              >
-                {rush ? (zh ? "播放" : "Play") : zh ? "跳過" : "Skip"}
               </button>
             )}
             {id === "fusion" && step === 2 && !bigIce ? (

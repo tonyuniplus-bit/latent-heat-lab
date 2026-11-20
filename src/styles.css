@@ -258,36 +258,7 @@ h3 { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; marg
 .nav { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid #d5dee6; flex: none; }
 .nav button { min-width: 112px; min-height: 44px; padding: 10px 14px; font-weight: 700; border-radius: 8px; }
 .nav button[data-testid="lab-continue"],
-.nav button.is-primary,
-.nav button[aria-pressed="true"] { background: #1a3654; color: white; }
-.lab[data-rush="yes"] .ice-label,
-.lab[data-rush="yes"] .lamp,
-.lab[data-rush="yes"] .lever,
-.lab[data-rush="yes"] .lead,
-.lab[data-rush="yes"] .jacket path,
-.lab[data-rush="yes"] .cotton,
-.lab[data-rush="yes"] .rod,
-.lab[data-rush="yes"] .coil,
-.lab[data-rush="yes"] .heat-blob,
-.lab[data-rush="yes"] .heat-glow,
-.lab[data-rush="yes"] .immersion,
-.lab[data-rush="yes"] .water,
-.lab[data-rush="yes"] .boil-temp,
-.lab[data-rush="yes"] .ice-bit,
-.lab[data-rush="yes"] .funnel-pool,
-.lab[data-rush="yes"] .control-pool,
-.lab[data-rush="yes"] .pre-water,
-.lab[data-rush="yes"] .melt,
-.lab[data-rush="yes"] .control-water {
-  transition-duration: 0s !important;
-  transition-delay: 0s !important;
-}
-.lab[data-rush="yes"] .lump,
-.lab[data-rush="yes"] .lid-no,
-.lab[data-rush="yes"] .main-ice .ice-bit.loose {
-  animation-duration: 0.001s !important;
-  animation-delay: 0s !important;
-}
+.nav button.is-primary { background: #1a3654; color: white; }
 .compare-title { fill: #1c2833; font-size: 28px; font-weight: 800; font-family: Palatino, "Palatino Linotype", Georgia, "PMingLiU", serif; }
 .compare-note, .compare-less, .compare-more { font-size: 20px; font-weight: 800; font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; }
 .compare-note { fill: #1478a8; }
