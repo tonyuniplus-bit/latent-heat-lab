@@ -1,6 +1,11 @@
 import type { Locale } from "../lab/script";
 import { grouped } from "../lab/ramp";
 
+function degrees(celsius: number): string {
+  const rounded = Math.round(celsius * 10) / 10;
+  return `${rounded < 0 ? "−" : ""}${Math.abs(rounded).toFixed(1)}°C`;
+}
+
 const CRYSTALS = [
   { x: 378, y: 188, s: 1, d: 0, role: "loose" },
   { x: 442, y: 176, s: 1.15, d: 0.15, role: "loose" },
@@ -51,19 +56,23 @@ export function FusionRig({
   step,
   joules,
   powered,
+  iceTemp,
   locale,
   fault,
 }: {
   step: number;
   joules: number | null;
   powered: boolean;
+  iceTemp: number;
   locale: Locale;
   fault: string | null;
 }) {
   const zh = locale === "zh-Hant";
+  const thaw = fault === "cold" && iceTemp >= -0.05;
   return (
     <svg
       className="scene fusion"
+      data-thaw={thaw ? "yes" : "no"}
       data-ice={step >= 2 ? "yes" : "no"}
       data-heater={step >= 3 ? "yes" : "no"}
       data-power={powered ? "yes" : "no"}
@@ -119,8 +128,6 @@ export function FusionRig({
       <path className="lead hot" d="M244 100 C 340 20, 410 -10, 460 -40.4" />
 
       <line className="stand" x1="648" y1="28" x2="648" y2="508" />
-      <rect className="boss" x="632" y="158" width="32" height="16" rx="3" />
-      <line className="clamp" x1="636" y1="166" x2="468" y2="166" />
       <Tag x={668} y={48} en="Stand" zh="鐵架" locale={locale} />
 
       <g className="funnel-set" filter="url(#soft)">
@@ -134,12 +141,14 @@ export function FusionRig({
 
       <g className="immersion" data-testid="heater-body">
         <circle className="heat-blob" cx="460" cy="268" r="58" />
-        <rect className="rod" x="452" y="150" width="16" height="150" rx="6" />
+        <rect className="rod" x="452" y="100" width="16" height="200" rx="6" />
         <path
           className="coil"
           data-testid="coil"
           d="M428 236 h64 v14 h-64 v14 h64 v14 h-64 v14 h64 v14 h-64"
         />
+        <rect className="boss" x="632" y="116" width="32" height="16" rx="3" />
+        <line className="clamp" x1="636" y1="124" x2="448" y2="124" />
         <Tag x={668} y={292} en="Heater" zh="加熱器" locale={locale} className="tag-hot" />
       </g>
 
@@ -156,6 +165,7 @@ export function FusionRig({
 
       <g className="beaker-a" filter="url(#soft)">
         <path className="beaker" d="M392 372 H548 L530 476 H410 Z" />
+        <path className="pre-water" d="M414 430 H526 L516 468 H424 Z" />
         <path className="melt" d="M414 430 H526 L516 468 H424 Z" />
         <g className="drips">
           <circle cx="460" cy="366" r="4.5" />
@@ -170,13 +180,20 @@ export function FusionRig({
       <g className="control" transform="translate(500, 0)" filter="url(#soft)">
         <line className="stand" x1="648" y1="28" x2="648" y2="508" />
         <Tag x={668} y={48} en="Stand" zh="鐵架" locale={locale} />
-        <Tag x={668} y={120} en="Control" zh="對照" locale={locale} className="tag-control" />
-        <Tag x={668} y={156} en="Crushed ice" zh="碎冰" locale={locale} className="ice-label tag-ice" />
+        <Tag x={668} y={88} en="Control" zh="對照" locale={locale} className="tag-control" />
+        <Tag x={668} y={176} en="Crushed ice" zh="碎冰" locale={locale} className="ice-label tag-ice" />
         <g className="funnel-set">
           <path className="funnel" d="M320 168 H600 L548 328 H372 Z" />
           <ellipse className="rim" cx="460" cy="168" rx="140" ry="16" />
           <rect className="stem" x="452" y="328" width="16" height="36" />
           <path className="control-pool" d="M400 286 H522 L506 324 H416 Z" />
+        </g>
+        <g className="immersion">
+          <rect className="rod" x="452" y="100" width="16" height="200" rx="6" />
+          <path className="coil" d="M428 236 h64 v14 h-64 v14 h64 v14 h-64 v14 h64 v14 h-64" />
+          <rect className="boss" x="632" y="116" width="32" height="16" rx="3" />
+          <line className="clamp" x1="636" y1="124" x2="448" y2="124" />
+          <Tag x={668} y={292} en="Off" zh="關閉" locale={locale} className="tag-control" />
         </g>
         <g className="control-ice">
           {CRYSTALS.map((bit) => (
@@ -185,6 +202,7 @@ export function FusionRig({
         </g>
         <g className="beaker-b">
           <path className="beaker" d="M392 372 H548 L530 476 H410 Z" />
+          <path className="pre-water" d="M414 430 H526 L516 468 H424 Z" />
           <path className="control-water" d="M414 430 H526 L516 468 H424 Z" />
           <g className="drips">
             <circle cx="460" cy="366" r="4.5" />
@@ -198,8 +216,8 @@ export function FusionRig({
       </g>
 
       <g className="fault fault-cold">
-        <text className="fault-label" x="500" y="168">
-          −5°C
+        <text className="fault-label ice-read" x="252" y="142" data-testid="lab-ice-temp">
+          {degrees(iceTemp)}
         </text>
         <path className="frost" d="M430 200 l8 -14 l8 14" />
         <path className="frost" d="M470 188 l6 -12 l6 12" />

@@ -54,21 +54,26 @@ export const EXPERIMENTS: readonly Experiment[] = [
         see: [{ en: "Ice at 0°C", zh: "冰在 0°C" }],
       },
       {
-        title: { en: "Heater in A only", zh: "加熱器只放進 A" },
-        action: { en: "Lower the heater into funnel A. The control has none", zh: "加熱器只放進漏斗 A，對照沒有加熱器" },
-        cautions: [{ en: "Ice must cover the whole coil", zh: "冰要蓋住整條發熱圈" }],
+        title: { en: "Heaters in both", zh: "兩邊都放下加熱器" },
+        action: { en: "Lower a heater into each funnel. Only A's is switched on", zh: "兩個漏斗都放下加熱器。只有 A 開啟" },
+        cautions: [
+          { en: "Ice must cover the whole coil", zh: "冰要蓋住整條發熱圈" },
+          { en: "The water already in the beakers will be thrown away", zh: "燒杯裡已有的水稍後要倒掉" },
+        ],
         see: [],
       },
       {
-        title: { en: "Switch on A", zh: "只開 A" },
-        action: { en: "Both keep dripping. A is faster; B is only the room", zh: "兩邊繼續滴。A 較快，B 只受室溫" },
+        title: { en: "Throw the water and switch on", zh: "倒掉水並開啟" },
+        action: { en: "Throw the drip water away. Put empty beakers under both funnels and switch on A", zh: "倒掉滴下水。兩邊同時放上空燒杯，並開啟 A" },
         cautions: [
+          { en: "The empty beakers and A's heater start together", zh: "空燒杯和 A 的加熱器同一刻開始" },
+          { en: "The control heater stays off", zh: "對照的加熱器保持關閉" },
           { en: "Read the joulemeter at start and finish", zh: "開始和結束都要讀焦耳計" },
           { en: "Add ice if the coil becomes exposed", zh: "發熱圈露出來就要加冰" },
         ],
         see: [
-          { en: "Start 23 876 J", zh: "初讀數 23 876 J" },
-          { en: "End 40 896 J", zh: "末讀數 40 896 J" },
+          { en: "Start 0 J", zh: "初讀數 0 J" },
+          { en: "End 17 020 J", zh: "末讀數 17 020 J" },
         ],
       },
       {
@@ -102,7 +107,7 @@ export const EXPERIMENTS: readonly Experiment[] = [
       {
         id: "cold",
         title: { en: "Ice below 0°C", zh: "冰低於 0°C" },
-        why: { en: "Some energy only warms the ice", zh: "一部分能量只用來升溫" },
+        why: { en: "It reaches 0°C quickly, then the heater keeps melting it", zh: "很快升到 0°C，加熱器仍繼續熔化" },
         effect: "high",
       },
       {
@@ -117,8 +122,8 @@ export const EXPERIMENTS: readonly Experiment[] = [
     id: "vapor",
     name: { en: "Vaporization of water", zh: "水的汽化" },
     aim: {
-      en: "ℓv = Pt / m. Two beakers; only A has the 500 W heater.",
-      zh: "ℓv = Pt / m。兩個燒杯，只有 A 有 500 W 加熱器。",
+      en: "ℓv = Pt / m. Both beakers have a heater; only A is on.",
+      zh: "ℓv = Pt / m。兩個燒杯都有加熱器，只有 A 開啟。",
     },
     steps: [
       {
@@ -137,30 +142,34 @@ export const EXPERIMENTS: readonly Experiment[] = [
         see: [],
       },
       {
-        title: { en: "Heater in A only", zh: "加熱器只放進 A" },
-        action: { en: "Lower the 500 W coil into A. The control has none", zh: "500 W 發熱圈只放進 A，對照沒有加熱器" },
+        title: { en: "Heaters in both", zh: "兩邊都放下加熱器" },
+        action: { en: "Lower a 500 W coil into each beaker. Leave both switched off", zh: "兩個燒杯都放下 500 W 發熱圈。兩邊都先關閉" },
         cautions: [{ en: "The whole coil must be under water", zh: "整條發熱圈要在水面下" }],
         see: [{ en: "P = 500 W", zh: "P = 500 W" }],
       },
       {
-        title: { en: "Start at boiling", zh: "沸騰才開始" },
-        action: { en: "Read A's balance and start the watch together", zh: "同時讀 A 的天平和開秒錶" },
-        cautions: [{ en: "Not while the water is still warming", zh: "水還在升溫時不要開始" }],
-        see: [
-          { en: "652.1 g", zh: "652.1 g" },
-          { en: "t = 0", zh: "t = 0" },
+        title: { en: "Both at 100°C", zh: "兩邊都是 100°C" },
+        action: { en: "Both thermometers read 100°C. The heaters are still off", zh: "兩個溫度計都是 100°C。加熱器都還未開啟" },
+        cautions: [
+          { en: "No boiling yet", zh: "這時還未沸騰" },
+          { en: "The control is at 100°C too", zh: "對照也是 100°C" },
         ],
+        see: [{ en: "Both 652.1 g", zh: "兩邊都是 652.1 g" }],
       },
       {
-        title: { en: "Boil for 2 min", zh: "沸騰 2 分鐘" },
-        action: { en: "A boils. The control is not heated", zh: "A 沸騰。對照沒有加熱" },
+        title: { en: "Switch on and boil", zh: "開啟並沸騰" },
+        action: { en: "Switch on A's heater. Boiling starts and the watch runs for 2 min", zh: "開啟 A 的加熱器。開始沸騰，秒錶走 2 分鐘" },
         cautions: [
+          { en: "The control heater stays off", zh: "對照的加熱器保持關閉" },
+          { en: "The control loses a little by evaporation", zh: "對照因蒸發少了一點" },
           { en: "Drops jumping out → result too low", zh: "水點跳出 → 結果偏小" },
           { en: "Steam dripping back → result too high", zh: "蒸氣滴回 → 結果偏大" },
+          { en: "The result still uses only A's loss", zh: "結果仍然只用 A 的減少" },
         ],
         see: [
           { en: "t = 2 min", zh: "t = 2 分鐘" },
-          { en: "627.3 g", zh: "627.3 g" },
+          { en: "A 627.3 g", zh: "A 627.3 g" },
+          { en: "B 651.2 g", zh: "B 651.2 g" },
         ],
       },
       {
@@ -189,9 +198,15 @@ export const EXPERIMENTS: readonly Experiment[] = [
         effect: "high",
       },
       {
+        id: "warm",
+        title: { en: "Water below 100°C", zh: "水低於 100°C" },
+        why: { en: "It rises from 80°C to 100°C, then boils", zh: "由 80°C 升到 100°C 才沸騰" },
+        effect: "high",
+      },
+      {
         id: "back",
         title: { en: "Steam drips back", zh: "蒸氣滴回去" },
-        why: { en: "The balance hardly falls", zh: "天平幾乎沒有下降" },
+        why: { en: "From the lid, back onto the balance", zh: "從蓋上滴回天平" },
         effect: "high",
       },
       {
@@ -199,12 +214,6 @@ export const EXPERIMENTS: readonly Experiment[] = [
         title: { en: "Drops jump out", zh: "水點跳出" },
         why: { en: "Liquid leaves, not steam", zh: "離開的是液體，不是蒸氣" },
         effect: "low",
-      },
-      {
-        id: "lid",
-        title: { en: "A lid", zh: "加蓋" },
-        why: { en: "Vapour condenses and falls back", zh: "蒸氣凝結後掉回去" },
-        effect: "high",
       },
     ],
   },

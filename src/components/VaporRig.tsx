@@ -1,6 +1,28 @@
 import type { Locale } from "../lab/script";
 import { clock } from "../lab/ramp";
 
+function degrees(celsius: number): string {
+  const rounded = Math.round(celsius * 10) / 10;
+  return `${rounded.toFixed(1)}°C`;
+}
+
+function Thermometer() {
+  return (
+    <g className="thermo boil-temp" data-testid="lab-thermo">
+      <circle className="thermo-bulb" cx="332" cy="318" r="14" />
+      <rect className="thermo-stem" x="324" y="164" width="16" height="148" rx="8" />
+      <rect className="thermo-col" x="329" y="178" width="6" height="140" rx="3" />
+      <line className="thermo-tick major" x1="340" y1="182" x2="356" y2="182" />
+      <line className="thermo-tick" x1="340" y1="214" x2="350" y2="214" />
+      <line className="thermo-tick" x1="340" y1="246" x2="350" y2="246" />
+      <line className="thermo-tick" x1="340" y1="278" x2="350" y2="278" />
+      <text className="thermo-read" x="300" y="156" textAnchor="end">
+        100°C
+      </text>
+    </g>
+  );
+}
+
 function Tag({
   x,
   y,
@@ -26,24 +48,32 @@ function Tag({
 export function VaporRig({
   step,
   balance,
+  controlBalance,
   seconds,
+  waterTemp,
   locale,
   fault,
 }: {
   step: number;
   balance: number | null;
+  controlBalance: number | null;
   seconds: number | null;
+  waterTemp: number;
   locale: Locale;
   fault: string | null;
 }) {
   const zh = locale === "zh-Hant";
+  const simmer = fault === "warm" && waterTemp < 99.95;
   return (
     <svg
       className="scene vapor"
+      data-filled={step >= 1 ? "yes" : "no"}
       data-wrap={step >= 2 ? "yes" : "no"}
       data-heater={step >= 3 ? "yes" : "no"}
-      data-boil={step >= 4 ? "yes" : "no"}
+      data-hundred={step === 4 ? "yes" : "no"}
+      data-boil={step >= 5 ? "yes" : "no"}
       data-timed={step >= 5 ? "yes" : "no"}
+      data-simmer={simmer ? "yes" : "no"}
       data-fault={fault ?? "none"}
       viewBox="0 0 1460 560"
       role="img"
@@ -60,9 +90,6 @@ export function VaporRig({
         </radialGradient>
         <marker id="arrowOut" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto">
           <path d="M0 0 L10 5 L0 10 Z" fill="#ff6a3c" />
-        </marker>
-        <marker id="arrowIn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto">
-          <path d="M0 0 L10 5 L0 10 Z" fill="#1d4e89" />
         </marker>
         <radialGradient id="heatBlob" cx="50%" cy="50%" r="50%">
           <stop offset="0" stopColor="#ff2a1a" stopOpacity="0.9" />
@@ -100,17 +127,17 @@ export function VaporRig({
       <Tag x={196} y={330} en="Water" zh="水" locale={locale} className="tag-water" />
 
       <g className="immersion" data-testid="heater-body">
-        <circle className="heat-blob" cx="394" cy="350" r="62" />
-        <rect className="rod" x="386" y="148" width="18" height="172" rx="6" />
-        <path className="coil" data-testid="coil" d="M366 310 h56 v16 h-56 v16 h56 v16 h-56 v16 h56 v14 h-56" />
-        <line className="callout" x1="428" y1="360" x2="568" y2="360" />
-        <Tag x={576} y={366} en="Heater" zh="加熱器" locale={locale} className="tag-hot" />
+        <circle className="heat-blob" cx="394" cy="322" r="56" />
+        <rect className="rod" x="386" y="148" width="18" height="144" rx="6" />
+        <path className="coil" data-testid="coil" d="M366 284 h56 v16 h-56 v16 h56 v16 h-56 v16 h56 v14 h-56" />
+        <line className="callout" x1="428" y1="328" x2="568" y2="328" />
+        <Tag x={576} y={334} en="Heater" zh="加熱器" locale={locale} className="tag-hot" />
       </g>
 
       <g className="water" data-testid="water-body">
         <path d="M300 230 C340 244 450 244 490 230 L484 386 C448 398 342 398 306 386 Z" />
         <ellipse className="surface" cx="395" cy="230" rx="96" ry="14" />
-        <circle className="heat-glow" cx="394" cy="340" r="54" clipPath="url(#waterClip)" />
+        <circle className="heat-glow" cx="394" cy="316" r="50" clipPath="url(#waterClip)" />
         <g className="bubbles" clipPath="url(#waterClip)">
           {Array.from({ length: 14 }, (_, index) => (
             <circle
@@ -132,6 +159,7 @@ export function VaporRig({
         <path d="M420 168 q-10 -20 6 -42 q10 -16 0 -30" />
         <path d="M450 158 q12 -18 0 -40" />
       </g>
+      <Thermometer />
 
       <g className="lid-no">
         <ellipse cx="395" cy="170" rx="90" ry="11" />
@@ -159,7 +187,7 @@ export function VaporRig({
       </g>
 
       <g className="balance">
-        <path className="chassis" d="M260 416 H530 V432 H496 V508 H294 V432 H260 Z" />
+        <path className="chassis" d="M230 416 H552 V432 H496 V508 H294 V432 H230 Z" />
         <rect className="screen" x="312" y="446" width="168" height="44" rx="4" />
         <text className="digits" x="396" y="476" textAnchor="middle" data-testid="lab-balance">
           {balance === null ? "—" : `${balance.toFixed(1)} g`}
@@ -179,17 +207,29 @@ export function VaporRig({
         </g>
         <path className="glass" d="M292 176 L286 400 L504 400 L498 176" />
         <rect className="glass-foot" x="274" y="400" width="242" height="16" />
+        <rect className="boss" x="544" y="140" width="32" height="16" rx="3" />
+        <line className="clamp" x1="548" y1="148" x2="404" y2="148" />
+        <g className="immersion">
+          <rect className="rod" x="386" y="148" width="18" height="144" rx="6" />
+          <path className="coil" d="M366 284 h56 v16 h-56 v16 h56 v16 h-56 v16 h56 v14 h-56" />
+          <Tag x={576} y={334} en="Off" zh="關閉" locale={locale} className="tag-control" />
+        </g>
         <Tag x={576} y={210} en="Beaker B" zh="燒杯 B" locale={locale} className="tag-control" />
         <g className="water">
           <path d="M300 230 C340 244 450 244 490 230 L484 386 C448 398 342 398 306 386 Z" />
           <ellipse className="surface" cx="395" cy="230" rx="96" ry="14" />
         </g>
         <path className="glass-shine" d="M312 190 L308 378" />
+        <g className="steam">
+          <path d="M360 168 q8 -16 0 -32" />
+          <path d="M430 164 q10 -18 0 -36" />
+        </g>
+        <Thermometer />
         <g className="balance">
-          <path className="chassis" d="M260 416 H530 V432 H496 V508 H294 V432 H260 Z" />
+          <path className="chassis" d="M230 416 H552 V432 H496 V508 H294 V432 H230 Z" />
           <rect className="screen" x="312" y="446" width="168" height="44" rx="4" />
           <text className="digits" x="396" y="476" textAnchor="middle">
-            {balance === null ? "—" : "652.1 g"}
+            {controlBalance === null ? "—" : `${controlBalance.toFixed(1)} g`}
           </text>
         </g>
       </g>
@@ -199,27 +239,34 @@ export function VaporRig({
         <path className="loss-ray" markerEnd="url(#arrowOut)" d="M248 330 L140 370" />
         <path className="loss-ray" markerEnd="url(#arrowOut)" d="M540 250 L660 210" />
         <path className="loss-ray" markerEnd="url(#arrowOut)" d="M536 340 L670 390" />
-        <path className="gain-ray" markerEnd="url(#arrowIn)" d="M160 290 L270 300" />
-        <path className="gain-ray" markerEnd="url(#arrowIn)" d="M690 300 L545 315" />
+      </g>
+      <g className="fault fault-warm">
+        <text className="fault-label" x="276" y="150" textAnchor="end" data-testid="lab-water-temp">
+          {degrees(waterTemp)}
+        </text>
       </g>
       <g className="fault fault-back">
-        <circle className="back-drop" cx="350" cy="186" r="4" />
-        <circle className="back-drop" cx="410" cy="178" r="3.4" />
-        <circle className="back-drop" cx="470" cy="190" r="4.2" />
-      </g>
-      <g className="fault fault-jump">
-        <circle className="out-drop" cx="500" cy="220" r="5" />
-        <circle className="out-drop" cx="520" cy="200" r="4" />
-        <circle className="out-drop" cx="300" cy="210" r="4.5" />
-      </g>
-      <g className="fault fault-lid">
         <ellipse className="lid-on" cx="395" cy="158" rx="118" ry="20" />
         <ellipse className="lid-knob" cx="395" cy="142" rx="18" ry="7" />
         <text className="fault-label lid-word" x="360" y="132">
           {zh ? "蓋" : "Lid"}
         </text>
-        <circle className="lid-drop" cx="360" cy="176" r="4.5" />
-        <circle className="lid-drop" cx="430" cy="174" r="4" />
+        <circle className="condensate" cx="348" cy="176" r="5" />
+        <circle className="condensate" cx="395" cy="180" r="4.2" />
+        <circle className="condensate" cx="448" cy="176" r="5.2" />
+        <circle className="lid-drop" cx="360" cy="186" r="4.5" />
+        <circle className="lid-drop late" cx="430" cy="184" r="4" />
+        <circle className="pan-drop" cx="246" cy="197" r="5" />
+        <circle className="pan-drop late" cx="538" cy="193" r="4.4" />
+        <circle className="condensate on-pan" cx="246" cy="410" r="5.5" />
+        <circle className="condensate on-pan" cx="262" cy="411" r="4" />
+        <circle className="condensate on-pan" cx="528" cy="410" r="5.2" />
+        <circle className="condensate on-pan" cx="542" cy="411" r="3.8" />
+      </g>
+      <g className="fault fault-jump">
+        <circle className="out-drop" cx="500" cy="220" r="5" />
+        <circle className="out-drop" cx="520" cy="200" r="4" />
+        <circle className="out-drop" cx="300" cy="210" r="4.5" />
       </g>
     </svg>
   );

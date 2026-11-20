@@ -142,6 +142,10 @@ export function DrawNotes({ locale }: { locale: Locale }) {
   const eraseFrom = useRef<Stroke[] | null>(null);
   const toolRef = useRef<Tool | null>(null);
   const colorRef = useRef<string>(INK.ink);
+  const activePointer = useRef<number | null>(null);
+  const lastPen = useRef(0);
+  const touchStarted = useRef(0);
+  const activeWasTouch = useRef(false);
   const [tool, setTool] = useState<Tool | null>(null);
   const [color, setColor] = useState<Ink>("ink");
   const [mark, setMark] = useState<Mark>("yellow");
@@ -160,6 +164,36 @@ export function DrawNotes({ locale }: { locale: Locale }) {
     return () => window.removeEventListener("resize", redraw);
   }, []);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!tool) return;
+    root.classList.add("is-drawing");
+    window.getSelection()?.removeAllRanges();
+    const onDock = (event: Event) => event.target instanceof Element && Boolean(event.target.closest(".draw-dock"));
+    const block = (event: Event) => {
+      if (onDock(event)) return;
+      event.preventDefault();
+    };
+    const clearSelection = () => {
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) selection.removeAllRanges();
+    };
+    const capture: AddEventListenerOptions = { capture: true, passive: false };
+    document.addEventListener("touchstart", block, capture);
+    document.addEventListener("touchmove", block, capture);
+    document.addEventListener("selectstart", block, true);
+    document.addEventListener("contextmenu", block, true);
+    document.addEventListener("selectionchange", clearSelection);
+    return () => {
+      root.classList.remove("is-drawing");
+      document.removeEventListener("touchstart", block, capture);
+      document.removeEventListener("touchmove", block, capture);
+      document.removeEventListener("selectstart", block, true);
+      document.removeEventListener("contextmenu", block, true);
+      document.removeEventListener("selectionchange", clearSelection);
+    };
+  }, [tool]);
+
   function redraw() {
     const canvas = canvasRef.current;
     if (canvas) paint(canvas, strokesRef.current);
@@ -175,9 +209,33 @@ export function DrawNotes({ locale }: { locale: Locale }) {
     setPast(historyRef.current.length);
   }
 
+  function notePen(event: ReactPointerEvent<HTMLCanvasElement>) {
+    if (event.pointerType === "pen") lastPen.current = performance.now();
+  }
+
+  function isPalm(event: ReactPointerEvent<HTMLCanvasElement>) {
+    if (event.pointerType !== "touch") return false;
+    const native = event.nativeEvent;
+    if (native.width > 24 || native.height > 24) return true;
+    return performance.now() - lastPen.current < 1200;
+  }
+
   function onDown(event: ReactPointerEvent<HTMLCanvasElement>) {
-    if (!toolRef.current || event.button !== 0) return;
-    if (event.pointerType === "touch" && event.width > 44) return;
+    notePen(event);
+    if (!toolRef.current || event.button !== 0 || isPalm(event)) return;
+    if (
+      event.pointerType === "pen" &&
+      activeWasTouch.current &&
+      activeRef.current &&
+      performance.now() - touchStarted.current < 500
+    ) {
+      strokesRef.current = strokesRef.current.slice(0, -1);
+      activeRef.current = null;
+    }
+    event.preventDefault();
+    activePointer.current = event.pointerId;
+    activeWasTouch.current = event.pointerType === "touch";
+    if (event.pointerType === "touch") touchStarted.current = performance.now();
     try {
       event.currentTarget.setPointerCapture(event.pointerId);
     } catch {
@@ -202,6 +260,8 @@ export function DrawNotes({ locale }: { locale: Locale }) {
   }
 
   function onMove(event: ReactPointerEvent<HTMLCanvasElement>) {
+    notePen(event);
+    if (isPalm(event) || (activePointer.current !== null && event.pointerId !== activePointer.current)) return;
     if ((event.buttons & 1) === 0 && activeRef.current === null && eraseFrom.current === null) return;
     if (eraseFrom.current) {
       strokesRef.current = strokesRef.current.filter((stroke) => !hitsStroke(stroke, event.clientX, event.clientY));
@@ -216,7 +276,10 @@ export function DrawNotes({ locale }: { locale: Locale }) {
     redraw();
   }
 
-  function onUp() {
+  function onUp(event: ReactPointerEvent<HTMLCanvasElement>) {
+    notePen(event);
+    if (activePointer.current !== null && event.pointerId !== activePointer.current) return;
+    activePointer.current = null;
     if (eraseFrom.current) {
       if (eraseFrom.current.length !== strokesRef.current.length) {
         historyRef.current = [...historyRef.current, eraseFrom.current].slice(-50);
@@ -290,6 +353,7 @@ export function DrawNotes({ locale }: { locale: Locale }) {
         onPointerMove={onMove}
         onPointerUp={onUp}
         onPointerCancel={onUp}
+        onContextMenu={(event) => event.preventDefault()}
       />
       <div className="draw-dock" role="toolbar" aria-label={zh ? "書寫" : "Draw"}>
         <div className="draw-pen-wrap">
